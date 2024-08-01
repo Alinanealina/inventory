@@ -1,4 +1,4 @@
-public class SlotObjects : Slot
+public class SlotItems : Slot
 {
     
 }
