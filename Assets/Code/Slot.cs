@@ -1,9 +1,12 @@
+using System;
 using UnityEngine;
 
-public abstract class Slot : MonoBehaviour
+[Serializable]
+public class Slot
 {
-    private float state = 0;
-    private Vector2 size;
+    [SerializeField] private float state = 0;
+    [SerializeField] private Vector2 size;
+    [SerializeField] private string item_name = "";
     public float State
     {
         get => state;
@@ -12,13 +15,20 @@ public abstract class Slot : MonoBehaviour
             state = value;
         }
     }
-    
     public Vector2 Size
     {
         get => size;
         set
         {
             size = value;
+        }
+    }
+    public string Item_name
+    {
+        get => item_name;
+        set
+        {
+            item_name = value;
         }
     }
 }

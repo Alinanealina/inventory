@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -6,14 +9,14 @@ using UnityEngine.UI;
 public interface IContainer
 {
     void FillWithItems();
-    void AddItemOfSize(GameObject item, Vector2 item_size);
+    void ItemRemoved(ItemGameObject itemGameObject);
 }
 
 public abstract class Container : MonoBehaviour, IContainer, IDropHandler
 {
-    protected List<Slot> slots = new();
+    public List<SlotObject> slots = new();
     protected int slot_column, slot_row;
-    private Vector2 grid_spacing, anchor_panel, cellSize;
+    protected Vector2 grid_spacing, anchor_panel, cellSize;
     [SerializeField] private GameObject slot_prefab;
     [SerializeField] private GameObject item_prefab;
     public abstract void FillWithItems();
@@ -37,8 +40,8 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
                 RemoveSlotAt(0);
             }
             GameObject obj = Instantiate(slot_prefab, transform);
-            slots.Add(obj.GetComponent<Slot>());
-            slots[i].Size = cellSize;
+            slots.Add(obj.GetComponent<SlotObject>());
+            slots[i].slot.Size = cellSize;
         }
     }
     private void RemoveSlotAt(int i)
@@ -50,7 +53,7 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
         }
     }
 
-    public virtual void AddItemOfSize(GameObject item, Vector2 item_size)
+    protected virtual void AddItemOfSize(GameObject item, Vector2 item_size)
     {
         Vector2 coord = FindEmptySpace(item_size);
         if (coord.x == -1)
@@ -60,15 +63,14 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
         {
             item = CreateItem(item_size);
         }
-
         ItemGameObject itemGameObject = item.GetComponent<ItemGameObject>();
         itemGameObject.OnDragging += ItemRemoved;
+        
         SetSlotsState(coord, item_size, 1);
-
-        GridLayoutGroup grid_slot = GetComponent<GridLayoutGroup>();
+        
         itemGameObject.MoveInSlot(anchor_panel + (cellSize + grid_spacing) * coord);
     }
-    private GameObject CreateItem(Vector2 item_size)
+    protected GameObject CreateItem(Vector2 item_size)
     {
         GameObject item = Instantiate(item_prefab, transform.parent);
         ItemGameObject itemGameObject = item.GetComponent<ItemGameObject>();
@@ -92,7 +94,7 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
             {
                 if (item_size.x - row_empty > slot_row - j)
                     break;
-                if (slots[i * slot_row + j].State == 1)
+                if (slots[i * slot_row + j].slot.State == 1)
                 {
                     row_empty = 0;
                     column_empty = 0;
@@ -124,15 +126,17 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
         {
             for (var j = (int)start_coord.x; j < start_coord.x + end_coord.x; j++)
             {
-                slots[i * slot_row + j].State = state;
+                slots[i * slot_row + j].slot.State = state;
             }
         }
     }
 
-    public void ItemRemoved(ItemGameObject itemGameObject)
+    public virtual void ItemRemoved(ItemGameObject itemGameObject)
     {
         itemGameObject.OnDragging -= ItemRemoved;
-        Vector2 anchor_item = itemGameObject.start_anchor;
-        SetSlotsState((anchor_item - anchor_panel) / (cellSize + grid_spacing), itemGameObject.item.Size, 0);
+        SetSlotsState(new Vector2(
+            (float)Math.Floor((itemGameObject.start_anchor - anchor_panel).x / (cellSize + grid_spacing).x),
+            (float)Math.Floor((itemGameObject.start_anchor - anchor_panel).y / (cellSize + grid_spacing).y)
+        ), itemGameObject.item.Size, 0);
     }
 }

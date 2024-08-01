@@ -607,6 +607,7 @@ GameObject:
   - component: {fileID: 2137778342}
   - component: {fileID: 2137778344}
   - component: {fileID: 2137778345}
+  - component: {fileID: 2137778346}
   m_Layer: 5
   m_Name: inventory_Panel
   m_TagString: Untagged
@@ -709,6 +710,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slot_prefab: {fileID: 8126312452107926410, guid: dce606024fcac5140af81cdb351528f1, type: 3}
   item_prefab: {fileID: 3886848492117199319, guid: 754e2c0d85c5bda4da430ed3c8f9dc4e, type: 3}
+  savableData:
+    slots: []
+--- !u!114 &2137778346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2137778340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2233feb9bdbd677439169c4682acb06c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  savableData:
+    slots: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -23,6 +23,14 @@ public class Item
         this.size = size;
     }
     
+    public string Item_name
+    {
+        get => item_name;
+        set
+        {
+            item_name = value;
+        }
+    }
     public float State
     {
         get => state;

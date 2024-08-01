@@ -11,7 +11,7 @@ public class ItemsContainer : Container
     public override void FillWithItems()
     {
         System.Random random = new();
-        int count = random.Next(2, 5);
+        int count = random.Next(2, 10);
         for (var i = 0; i < count; i++)
         {
             AddItemOfSize(null, new Vector2(random.Next(1, 5), random.Next(1, 5)));
