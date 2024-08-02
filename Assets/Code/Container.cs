@@ -10,6 +10,7 @@ public interface IContainer
 {
     void FillWithItems();
     void ItemRemoved(ItemGameObject itemGameObject);
+    void AddBack(ItemGameObject itemGameObject);
 }
 
 public abstract class Container : MonoBehaviour, IContainer, IDropHandler
@@ -21,6 +22,7 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
     [SerializeField] private GameObject item_prefab;
     public abstract void FillWithItems();
     public abstract void OnDrop(PointerEventData eventData);
+    public abstract void AddBack(ItemGameObject itemGameObject);
 
     private void Awake()
     {
@@ -65,6 +67,7 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
         }
         ItemGameObject itemGameObject = item.GetComponent<ItemGameObject>();
         itemGameObject.OnDragging += ItemRemoved;
+        itemGameObject.OnWrongDrop += AddBack;
         
         SetSlotsState(coord, item_size, 1);
         

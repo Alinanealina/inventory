@@ -38,6 +38,7 @@ public class Inventory : Container
         item = CreateItem(item_size);
         ItemGameObject itemGameObject = item.GetComponent<ItemGameObject>();
         itemGameObject.OnDragging += ItemRemoved;
+        itemGameObject.OnWrongDrop += AddBack;
         
         itemGameObject.MoveInSlot(anchor_panel + (cellSize + grid_spacing) * coord);
     }
@@ -70,10 +71,20 @@ public class Inventory : Container
         
         ItemGameObject itemGameObject = item.GetComponent<ItemGameObject>();
         itemGameObject.OnDragging += ItemRemoved;
+        itemGameObject.OnWrongDrop += AddBack;
         
         SetSlotsState(coord, item_size, 1);
         
         itemGameObject.MoveInSlot(anchor_panel + (cellSize + grid_spacing) * coord);
         slots[(int)(coord.y * slot_row + coord.x)].slot.Item_name = itemGameObject.item.Item_name;
+    }
+
+    public override void AddBack(ItemGameObject itemGameObject)
+    {
+        itemGameObject.OnWrongDrop -= AddBack;
+        if (itemGameObject.item.State == 0)
+        {
+            AddItemOfSize(itemGameObject.gameObject, itemGameObject.item.Size);
+        }
     }
 }

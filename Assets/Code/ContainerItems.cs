@@ -27,4 +27,12 @@ public class ItemsContainer : Container
             itemGameObject.item.State = 0;
         }
     }
+    public override void AddBack(ItemGameObject itemGameObject)
+    {
+        itemGameObject.OnWrongDrop -= AddBack;
+        if (itemGameObject.item.State == 0)
+        {
+            AddItemOfSize(itemGameObject.gameObject, itemGameObject.item.Size);
+        }
+    }
 }
