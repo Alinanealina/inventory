@@ -7,6 +7,7 @@ public class ItemGameObject : MonoBehaviour, IDraggable, IBeginDragHandler, IEnd
 {
     public Item item;
     private CanvasGroup canvasGroup;
+    private Canvas canvas;
     private RectTransform item_transform, canvas_transform;
     public event Action<ItemGameObject> OnDragging, OnWrongDrop;
     public Vector2 start_anchor;
@@ -26,6 +27,7 @@ public class ItemGameObject : MonoBehaviour, IDraggable, IBeginDragHandler, IEnd
     {
         item_transform = GetComponent<RectTransform>();
         wrongDrop = GetComponent<WrongDrop>();
+        canvas = transform.parent.GetComponent<Canvas>();
         canvas_transform = transform.parent.GetComponent<RectTransform>();
         ChangeImage();
         canvasGroup = GetComponent<CanvasGroup>();
@@ -43,7 +45,7 @@ public class ItemGameObject : MonoBehaviour, IDraggable, IBeginDragHandler, IEnd
 
     public void OnDrag(PointerEventData eventData)
     {
-        item_transform.anchoredPosition += eventData.delta;
+        item_transform.anchoredPosition += eventData.delta / canvas.scaleFactor;
     }
     public void OnBeginDrag(PointerEventData eventData)
     {
