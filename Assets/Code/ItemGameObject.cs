@@ -3,15 +3,16 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ItemGameObject : MonoBehaviour, IDraggable, IBeginDragHandler, IEndDragHandler, IDragHandler
+public class ItemGameObject : MonoBehaviour, IDraggable
 {
     public Item item;
     private CanvasGroup canvasGroup;
     private Canvas canvas;
     private RectTransform item_transform, canvas_transform;
     public event Action<ItemGameObject> OnDragging, OnWrongDrop;
-    public Vector2 start_anchor;
+    public Vector2 start_position;
     private WrongDrop wrongDrop;
+    public bool dropped = false;
 
     public void Create()
     {
@@ -40,7 +41,8 @@ public class ItemGameObject : MonoBehaviour, IDraggable, IBeginDragHandler, IEnd
     
     public void MoveInSlot(Vector2 new_position)
     {
-        item_transform.anchoredPosition = new_position;
+        start_position = new_position;
+        item_transform.anchoredPosition = start_position;
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -51,7 +53,6 @@ public class ItemGameObject : MonoBehaviour, IDraggable, IBeginDragHandler, IEnd
     {
         canvasGroup.blocksRaycasts = false;
         canvasGroup.alpha = 0.5f;
-        start_anchor = item_transform.anchoredPosition;
         OnDragging?.Invoke(this);
     }
     public void OnEndDrag(PointerEventData eventData)
@@ -59,14 +60,15 @@ public class ItemGameObject : MonoBehaviour, IDraggable, IBeginDragHandler, IEnd
         canvasGroup.blocksRaycasts = true;
         canvasGroup.alpha = 1f;
         
-        if ((eventData == null) ||
-            (item_transform.anchoredPosition.x <= 0) ||
-            (item_transform.anchoredPosition.x >= canvas_transform.anchoredPosition.x) ||
-            (item_transform.anchoredPosition.y <= 0) ||
-            (item_transform.anchoredPosition.y >= canvas_transform.anchoredPosition.y))
+        if (!dropped && (eventData != null) &&
+            ((item_transform.anchoredPosition.x <= canvas_transform.anchoredPosition.x) ||
+            (item_transform.anchoredPosition.x + item_transform.sizeDelta.x >= canvas_transform.anchoredPosition.x + canvas_transform.sizeDelta.x) ||
+            (item_transform.anchoredPosition.y + item_transform.sizeDelta.y >= canvas_transform.anchoredPosition.y) ||
+            (item_transform.anchoredPosition.y <= canvas_transform.anchoredPosition.y - canvas_transform.sizeDelta.y)))
         {
             wrongDrop.PlaceBack(eventData);
         }
+        dropped = false;
     }
 
     public void InvokeOnWrongDrop(ItemGameObject itemGameObject)

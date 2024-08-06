@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class ItemsContainer : Container
 {
@@ -17,16 +16,7 @@ public class ItemsContainer : Container
             AddItemOfSize(null, new Vector2(random.Next(1, 5), random.Next(1, 5)));
         }
     }
-
-    public override void OnDrop(PointerEventData eventData)
-    {
-        if (eventData.pointerDrag != null)
-        {
-            ItemGameObject itemGameObject = eventData.pointerDrag.GetComponent<ItemGameObject>();
-            AddItemOfSize(itemGameObject.gameObject, itemGameObject.item.Size);
-            itemGameObject.item.State = 0;
-        }
-    }
+    
     public override void AddBack(ItemGameObject itemGameObject)
     {
         itemGameObject.OnWrongDrop -= AddBack;

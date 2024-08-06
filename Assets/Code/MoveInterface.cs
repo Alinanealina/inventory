@@ -1,8 +1,6 @@
 using UnityEngine.EventSystems;
 
-public interface IDraggable
+public interface IDraggable : IBeginDragHandler, IEndDragHandler, IDragHandler
 {
-    void OnBeginDrag(PointerEventData eventData);
-    void OnEndDrag(PointerEventData eventData);
-    void OnDrag(PointerEventData eventData);
+    
 }

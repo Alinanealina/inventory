@@ -12,7 +12,8 @@ public class WrongDrop : MonoBehaviour, IDropHandler
     {
         if (eventData.pointerDrag != null)
         {
-            ItemGameObject itemGameObject =  eventData.pointerDrag.GetComponent<ItemGameObject>();
+            ItemGameObject itemGameObject = eventData.pointerDrag.GetComponent<ItemGameObject>();
+            itemGameObject.dropped = true;
             itemGameObject.InvokeOnWrongDrop(itemGameObject);
         }
     }

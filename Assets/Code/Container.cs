@@ -1,19 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public interface IContainer
 {
     void FillWithItems();
+    void ItemDropped(ItemGameObject itemGameObject);
     void ItemRemoved(ItemGameObject itemGameObject);
     void AddBack(ItemGameObject itemGameObject);
 }
 
-public abstract class Container : MonoBehaviour, IContainer, IDropHandler
+public abstract class Container : MonoBehaviour, IContainer
 {
     public List<SlotObject> slots = new();
     protected int slot_column, slot_row;
@@ -21,7 +19,6 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
     [SerializeField] private GameObject slot_prefab;
     [SerializeField] private GameObject item_prefab;
     public abstract void FillWithItems();
-    public abstract void OnDrop(PointerEventData eventData);
     public abstract void AddBack(ItemGameObject itemGameObject);
 
     private void Awake()
@@ -59,7 +56,14 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
     {
         Vector2 coord = FindEmptySpace(item_size);
         if (coord.x == -1)
+        {
+            if (item != null)
+            {
+                ItemGameObject itemGameObject_reject = item.GetComponent<ItemGameObject>();
+                itemGameObject_reject.InvokeOnWrongDrop(itemGameObject_reject);
+            }
             return;
+        }
         
         if (item == null)
         {
@@ -72,6 +76,7 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
         SetSlotsState(coord, item_size, 1);
         
         itemGameObject.MoveInSlot(anchor_panel + (cellSize + grid_spacing) * coord);
+        itemGameObject.item.State = 0;
     }
     protected GameObject CreateItem(Vector2 item_size)
     {
@@ -125,12 +130,22 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
 
     protected void SetSlotsState(Vector2 start_coord, Vector2 end_coord, float state)
     {
-        for (var i = (int)start_coord.y; i < start_coord.y + end_coord.y; i++)
+        for (var i = (int)start_coord.y; (i < start_coord.y + end_coord.y) && (i < slot_column); i++)
         {
-            for (var j = (int)start_coord.x; j < start_coord.x + end_coord.x; j++)
+            for (var j = (int)start_coord.x; (j < start_coord.x + end_coord.x) && (j < slot_row); j++)
             {
                 slots[i * slot_row + j].slot.State = state;
             }
+        }
+    }
+
+    public virtual void ItemDropped(ItemGameObject itemGameObject)
+    {
+        float previous_state = itemGameObject.item.State;
+        AddItemOfSize(itemGameObject.gameObject, itemGameObject.item.Size);
+        if (previous_state == itemGameObject.item.State)
+        {
+            itemGameObject.OnWrongDrop -= AddBack;
         }
     }
 
@@ -138,8 +153,8 @@ public abstract class Container : MonoBehaviour, IContainer, IDropHandler
     {
         itemGameObject.OnDragging -= ItemRemoved;
         SetSlotsState(new Vector2(
-            (float)Math.Floor((itemGameObject.start_anchor - anchor_panel).x / (cellSize + grid_spacing).x),
-            (float)Math.Floor((itemGameObject.start_anchor - anchor_panel).y / (cellSize + grid_spacing).y)
+            (float)Math.Floor(((itemGameObject.start_position - anchor_panel) / (cellSize + grid_spacing)).x),
+            (float)Math.Floor(((itemGameObject.start_position - anchor_panel) / (cellSize + grid_spacing)).y)
         ), itemGameObject.item.Size, 0);
     }
 }

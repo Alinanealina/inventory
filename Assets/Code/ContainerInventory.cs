@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 public class Inventory : Container
 {
@@ -10,10 +9,11 @@ public class Inventory : Container
     {
         dataSaverInventory.SaveState();
     }
+    
     private void Start()
     {
-        AddSlots(10, 10);
         dataSaverInventory = GetComponent<DataSaverInventory>();
+        AddSlots(10, 10);
         FillWithItems();
     }
     public override void FillWithItems()
@@ -32,57 +32,53 @@ public class Inventory : Container
             }
         }
     }
-
     private void PlaceItemAtCoordinates(GameObject item, Vector2 item_size, Vector2 coord)
     {
         item = CreateItem(item_size);
         ItemGameObject itemGameObject = item.GetComponent<ItemGameObject>();
         itemGameObject.OnDragging += ItemRemoved;
         itemGameObject.OnWrongDrop += AddBack;
+
+        SetSlotsState(coord, item_size, 1);
         
         itemGameObject.MoveInSlot(anchor_panel + (cellSize + grid_spacing) * coord);
     }
     
-    public override void ItemRemoved(ItemGameObject itemGameObject)
-    {
-        itemGameObject.OnDragging -= ItemRemoved;
-        Vector2 coord = new Vector2(
-            (float)Math.Floor((itemGameObject.start_anchor - anchor_panel).x / (cellSize + grid_spacing).x),
-            (float)Math.Floor((itemGameObject.start_anchor - anchor_panel).y / (cellSize + grid_spacing).y)
-        );
-        SetSlotsState(coord, itemGameObject.item.Size, 0);
-        slots[(int)(coord.y * slot_row + coord.x)].slot.Item_name = "";
-    }
-
-    public override void OnDrop(PointerEventData eventData)
-    {
-        if (eventData.pointerDrag != null)
-        {
-            ItemGameObject itemGameObject = eventData.pointerDrag.GetComponent<ItemGameObject>();
-            AddItemOfSize(itemGameObject.gameObject, itemGameObject.item.Size);
-            itemGameObject.item.State = 1;
-        }
-    }
     protected override void AddItemOfSize(GameObject item, Vector2 item_size)
     {
         Vector2 coord = FindEmptySpace(item_size);
-        if (coord.x == -1)
-            return;
-        
         ItemGameObject itemGameObject = item.GetComponent<ItemGameObject>();
+        if (coord.x == -1)
+        {
+            itemGameObject.InvokeOnWrongDrop(itemGameObject);
+            return;
+        }
+        
         itemGameObject.OnDragging += ItemRemoved;
         itemGameObject.OnWrongDrop += AddBack;
         
         SetSlotsState(coord, item_size, 1);
         
         itemGameObject.MoveInSlot(anchor_panel + (cellSize + grid_spacing) * coord);
+        itemGameObject.item.State = 1;
         slots[(int)(coord.y * slot_row + coord.x)].slot.Item_name = itemGameObject.item.Item_name;
+    }
+    
+    public override void ItemRemoved(ItemGameObject itemGameObject)
+    {
+        itemGameObject.OnDragging -= ItemRemoved;
+        Vector2 coord = new Vector2(
+            (float)Math.Floor(((itemGameObject.start_position - anchor_panel) / (cellSize + grid_spacing)).x),
+            (float)Math.Floor(((itemGameObject.start_position - anchor_panel) / (cellSize + grid_spacing)).y)
+        );
+        SetSlotsState(coord, itemGameObject.item.Size, 0);
+        slots[(int)(coord.y * slot_row + coord.x)].slot.Item_name = "";
     }
 
     public override void AddBack(ItemGameObject itemGameObject)
     {
         itemGameObject.OnWrongDrop -= AddBack;
-        if (itemGameObject.item.State == 0)
+        if (itemGameObject.item.State == 1)
         {
             AddItemOfSize(itemGameObject.gameObject, itemGameObject.item.Size);
         }
